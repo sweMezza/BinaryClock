@@ -21,6 +21,9 @@ CLOCK_START_POS = (50, 0)
 
 display = pygame.display.set_mode(WINDOW_SIZE)
 
+width = display.get_width()
+height = display.get_height()
+
 def convertinttobinlist(part, length=0):
     result = ""
     if part == 0:
@@ -48,19 +51,19 @@ def convertimetobinary(time):
     return binary_clock
 
 
-def drawbinaryclock(display):
+def drawbinaryclock(display, showdigitalclock):
     # draw filled circle then draw a circle outline OVER of the same size
     now = datetime.now()
     now_in_binary = convertimetobinary(now)
     time_digit_list = now.strftime("%H%M%S")
-    print(time_digit_list)
 
     font = pygame.font.SysFont(None, 48)
 
 
     for x in range(6):
-        time_digit = font.render(time_digit_list[x], True, DIGITAL_TIME_COLOR)
-        display.blit(time_digit, ((CLOCK_START_POS[0] + x * CLOCK_LAMP_SIZE * 3) - time_digit.get_width()/2, (CLOCK_START_POS[1] + 5 * CLOCK_LAMP_SIZE * 3) - time_digit.get_height()/2))
+        if showdigitalclock:
+            time_digit = font.render(time_digit_list[x], True, DIGITAL_TIME_COLOR)
+            display.blit(time_digit, ((CLOCK_START_POS[0] + x * CLOCK_LAMP_SIZE * 3) - time_digit.get_width()/2, (CLOCK_START_POS[1] + 5 * CLOCK_LAMP_SIZE * 3) - time_digit.get_height()/2))
 
         if x < 2:
             fill_color = FILL_COLOR_ACTIVE_HOUR
@@ -87,7 +90,13 @@ def drawbinaryclock(display):
             if x == 0 and y == 3:
                 break
 
+
 if __name__ == "__main__":
+    font = pygame.font.SysFont("Arial", 20)
+    text = font.render("Show digital clock", True, DIGITAL_TIME_COLOR)
+
+    showdigitalclock = False
+
     while True:
         # event loop
         for event in pygame.event.get():
@@ -98,10 +107,19 @@ if __name__ == "__main__":
                 if event.key == K_ESCAPE:
                     pygame.quit()
                     sys.exit()
+            if event.type == MOUSEBUTTONDOWN:
+                if 0 <= mouse[0] <= text.get_width() + 4 and 0 <= mouse[1] <= text.get_height() + 4:
+                    showdigitalclock = not showdigitalclock
 
         display.fill((90, 90, 90))
 
-        drawbinaryclock(display)
+        mouse = pygame.mouse.get_pos()
+
+        # draw show digital clock button
+        pygame.draw.rect(display, DIGITAL_TIME_COLOR, (0, 0, text.get_width() + 4, text.get_height() + 4), 1)
+        display.blit(text, (2, 2))
+
+        drawbinaryclock(display, showdigitalclock)
 
         pygame.display.flip()
 
